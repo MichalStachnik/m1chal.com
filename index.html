@@ -16,7 +16,7 @@
     ws.onmessage = (event) => {
       console.log(event.data);
       const message = document.createElement('p');
-      message.textContet = `new event: ${event.data}`;
+      message.textContent = `${event.data}`;
       document.getElementById('messages').appendChild(message);
     };
   </script>
