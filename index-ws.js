@@ -9,21 +9,32 @@ app.get('/', (req, res) => {
 server.on('request', app);
 server.listen(3000, () => console.log('server started on port 3000'));
 
+process.on('SIGINT', () => {
+  wss.clients.forEach((client) => client.close());
+  server.close(() => {
+    shutdown();
+  });
+});
+
 const WebSocketServer = require('ws').Server;
 
 const wss = new WebSocketServer({ server });
 
 const onConnect = (ws) => {
   console.log('clients connected', wss.clients.size);
-  wss.broadcast(`current visitor count: ${wss.clients.size}`);
+  wss.broadcast(`a new visitor entered: ${wss.clients.size}`);
 
   if (ws.readyState === ws.OPEN) {
     ws.send('welcome to my simple server');
   }
 
+  db.run(`INSERT INTO visitors (count, time)
+    VALUES (${wss.clients.size} datetime('now'))
+  `);
+
   ws.on('close', () => {
     console.log('client has disconnected');
-    wss.broadcast(`current visitor count: ${wss.clients.size}`);
+    wss.broadcast(`a visitor has left: ${wss.clients.size}`);
   });
 };
 
@@ -34,3 +45,27 @@ wss.broadcast = (data) => {
 };
 
 wss.on('connection', onConnect);
+
+const sqlite = require('sqlite3');
+
+const db = new sqlite.Database(':memory:');
+
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE visitors (
+      count INTEGER,
+      time TEXT
+    )
+  `);
+});
+
+const getCounts = () => {
+  db.each('SELECT * FROM visitors', (err, row) => {
+    console.log('row', row);
+  });
+};
+
+const shutdown = () => {
+  getCounts();
+  db.close();
+};
