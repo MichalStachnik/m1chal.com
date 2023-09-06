@@ -22,26 +22,6 @@ const WebSocketServer = require('ws').Server;
 
 const wss = new WebSocketServer({ server });
 
-const onConnect = (ws) => {
-  console.log('clients connected', wss.clients.size);
-  wss.broadcast(`a new visitor entered: ${wss.clients.size}`);
-
-  if (ws.readyState === ws.OPEN) {
-    ws.send('welcome to my simple server');
-  }
-
-  db.run(`INSERT INTO visitors (count, time)
-    VALUES (${wss.clients.size} datetime('now'))
-  `);
-
-  ws.on('close', () => {
-    console.log('client has disconnected');
-    wss.broadcast(`a visitor has left: ${wss.clients.size}`);
-  });
-
-  ws.on('error', console.error);
-};
-
 wss.broadcast = (data) => {
   wss.clients.forEach((client) => {
     client.send(data);
@@ -49,15 +29,13 @@ wss.broadcast = (data) => {
 };
 
 wss.on('connection', function connection(ws) {
-  const numClients = wss.clients.size;
-
-  console.log('clients connected: ', numClients);
+  console.log('clients connected: ', wss.clients.size);
 
   // Log number of visitors at current moment
   db.run(`INSERT INTO visitors (count, time)
     VALUES (${numClients}, datetime('now'))`);
 
-  wss.broadcast(`Current visitors: ${numClients}`);
+  wss.broadcast(`Current visitors: ${wss.clients.size}`);
 
   if (ws.readyState === ws.OPEN) {
     ws.send('welcome!');
@@ -70,8 +48,6 @@ wss.on('connection', function connection(ws) {
 
   ws.on('error', function error() {});
 });
-
-// wss.on('connection', onConnect);
 
 const sqlite = require('sqlite3');
 
