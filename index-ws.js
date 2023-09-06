@@ -29,22 +29,22 @@ wss.broadcast = (data) => {
 };
 
 wss.on('connection', function connection(ws) {
-  const numClients = wss.clients.size;
+  // const numClients = wss.clients.size;
 
-  console.log('clients connected: ', numClients);
+  console.log('clients connected: ', wss.clients.size);
 
   // Log number of visitors at current moment
   db.run(`INSERT INTO visitors (count, time)
     VALUES (${numClients}, datetime('now'))`);
 
-  wss.broadcast(`Current visitors: ${numClients}`);
+  wss.broadcast(`Current visitors: ${wss.clients.size}`);
 
   if (ws.readyState === ws.OPEN) {
     ws.send('welcome!');
   }
 
   ws.on('close', function close() {
-    wss.broadcast(`Current visitors: ${numClients}`);
+    wss.broadcast(`Current visitors: ${wss.clients.size}`);
     console.log('A client has disconnected');
   });
 
