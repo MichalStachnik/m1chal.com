@@ -7,6 +7,10 @@
   </head>
   <body>
     <div id="messages"></div>
+    <form onsubmit="">
+      <input type="text" />
+      <button type="submit">send</button>
+    </form>
   </body>
   <script>
     let ws;
@@ -18,6 +22,11 @@
       const message = document.createElement('p');
       message.textContent = `${event.data}`;
       document.getElementById('messages').appendChild(message);
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      console.log(e.target.value);
     };
   </script>
 </html>

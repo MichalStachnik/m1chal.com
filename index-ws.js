@@ -10,7 +10,9 @@ server.on('request', app);
 server.listen(3000, () => console.log('server started on port 3000'));
 
 process.on('SIGINT', () => {
-  wss.clients.forEach((client) => client.close());
+  wss.clients.forEach((client) => {
+    client.close();
+  });
   server.close(() => {
     shutdown();
   });
@@ -36,6 +38,8 @@ const onConnect = (ws) => {
     console.log('client has disconnected');
     wss.broadcast(`a visitor has left: ${wss.clients.size}`);
   });
+
+  ws.on('error', console.error);
 };
 
 wss.broadcast = (data) => {
