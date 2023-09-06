@@ -25,7 +25,9 @@
     };
 
     const handleSubmit = (e) => {
+      console.log('about to prevent...');
       e.preventDefault();
+      console.log('should have prevented');
       console.log(e.target.value);
     };
   </script>
